@@ -74,7 +74,7 @@ function remover(i) {
     render();
 }
 
-async function finalizarCompra() {
+function finalizarCompra() {
     if (carrinho.length === 0) {
         alert('Seu carrinho está vazio!');
         return;
@@ -86,33 +86,26 @@ async function finalizarCompra() {
         total += item.preco * item.quantidade;
     });
 
-    try {
-        const resposta = await fetch(
-            'https://oboticario.free.nf/finalizar-pedido.php',
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    produtos: carrinho,
-                    total: total
-                })
-            }
-        );
+    const dadosPedido = {
+        produtos: carrinho,
+        total: total
+    };
 
-        const dados = await resposta.json();
+    const formulario = document.createElement('form');
 
-        if (!resposta.ok || !dados.link) {
-            throw new Error(dados.erro || 'Erro ao finalizar pedido.');
-        }
+    formulario.method = 'POST';
+    formulario.action = 'https://oboticario.free.nf/finalizar-pedido.php';
 
-        window.location.href = dados.link;
+    const campo = document.createElement('input');
 
-    } catch (erro) {
-        console.error('Erro ao finalizar compra:', erro);
-        alert('Não foi possível finalizar o pedido. Tente novamente.');
-    }
+    campo.type = 'hidden';
+    campo.name = 'pedido';
+    campo.value = JSON.stringify(dadosPedido);
+
+    formulario.appendChild(campo);
+    document.body.appendChild(formulario);
+
+    formulario.submit();
 }
 
 render();
