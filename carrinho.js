@@ -67,36 +67,6 @@ function remover(i) {
 }
 
 
-<?php
-
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-
-if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
-    http_response_code(204);
-    exit;
-}
-
-if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
-    echo json_encode(["erro" => "Método não permitido"]);
-    exit;
-}
-
-$numeroWhatsApp = "5511949446373";
-
-$dados = json_decode(file_get_contents("php://input"), true);
-
-if (
-    !is_array($dados) ||
-    empty($dados["produtos"]) ||
-    !is_array($dados["produtos"]) ||
-    !isset($dados["total"])
-) {
-    http_response_code(400);
-    echo json_encode(["erro" => "Dados do pedido inválidos"]);
     exit;
 }
 
@@ -125,3 +95,29 @@ $link = "https://wa.me/" . $numeroWhatsApp . "?text=" . urlencode($mensagem);
 echo json_encode(["link" => $link]);
 
 ?>
+function finalizarCompra() {
+    if (carrinho.length === 0) {
+        alert('Seu carrinho está vazio!');
+        return;
+    }
+
+    let mensagem = 'Olá! Gostaria de fazer o pedido:\n\n';
+    let total = 0;
+
+    carrinho.forEach(item => {
+        const subtotal = item.preco * item.quantidade;
+        total += subtotal;
+        mensagem += `• ${item.quantidade}x ${item.nome} - ${formatar(subtotal)}\n`;
+    });
+
+    mensagem += `\nTotal: ${formatar(total)}`;
+
+    const numero = '5511949446373';
+
+    window.open(
+        `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`,
+        '_blank'
+    );
+}
+
+render();
