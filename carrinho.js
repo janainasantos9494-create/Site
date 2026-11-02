@@ -66,25 +66,49 @@ function remover(i) {
     render();
 }
 
-function finalizarCompra() {
+async function finalizarCompra() {
     if (carrinho.length === 0) {
         alert('Seu carrinho está vazio!');
         return;
     }
 
-    let mensagem = 'Olá! Gostaria de fazer o pedido:\n\n';
     let total = 0;
 
-    carrinho.forEach(item => {
+    const produtos = carrinho.map(item => {
         const subtotal = item.preco * item.quantidade;
         total += subtotal;
-        mensagem += `• ${item.quantidade}x ${item.nome} - ${formatar(subtotal)}\n`;
+
+        return {
+            nome: item.nome,
+            quantidade: item.quantidade,
+            preco: subtotal.toFixed(2)
+        };
     });
 
-    mensagem += `\nTotal: ${formatar(total)}`;
+    try {
+        const resposta = await fetch(
+            'https://oboticario.free.nf/finalizar-pedido.php',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    produtos: produtos,
+                    total: total.toFixed(2)
+                })
+            }
+        );
 
-    const numero = '5511999999999'; // troque pelo número da revendedora (DDI + DDD + número)
-    window.open(`https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`, '_blank');
+        const dados = await resposta.json();
+
+        if (!resposta.ok || !dados.link) {
+            throw new Error('Não foi possível preparar o pedido.');
+        }
+
+        window.open(dados.link, '_blank');
+
+    } catch (erro) {
+        alert('Erro ao finalizar pedido: ' + erro.message);
+    }
 }
-
-render();
