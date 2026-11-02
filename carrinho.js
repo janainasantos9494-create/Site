@@ -1,3 +1,4 @@
+
 let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
 
 const lista = document.getElementById('lista-carrinho');
@@ -6,7 +7,10 @@ const spanQuantidade = document.getElementById('quantidade');
 const spanTotal = document.getElementById('total');
 
 function formatar(valor) {
-    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    return valor.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
 }
 
 function salvar() {
@@ -55,7 +59,11 @@ function render() {
 
 function alterarQtd(i, delta) {
     carrinho[i].quantidade += delta;
-    if (carrinho[i].quantidade <= 0) carrinho.splice(i, 1);
+
+    if (carrinho[i].quantidade <= 0) {
+        carrinho.splice(i, 1);
+    }
+
     salvar();
     render();
 }
@@ -66,25 +74,45 @@ function remover(i) {
     render();
 }
 
-function finalizarCompra() {
+async function finalizarCompra() {
     if (carrinho.length === 0) {
         alert('Seu carrinho está vazio!');
         return;
     }
 
-    let mensagem = 'Olá! Gostaria de fazer o pedido:\n\n';
     let total = 0;
 
     carrinho.forEach(item => {
-        const subtotal = item.preco * item.quantidade;
-        total += subtotal;
-        mensagem += `• ${item.quantidade}x ${item.nome} - ${formatar(subtotal)}\n`;
+        total += item.preco * item.quantidade;
     });
 
-    mensagem += `\nTotal: ${formatar(total)}`;
+    try {
+        const resposta = await fetch(
+            'https://oboticario.free.nf/finalizar-pedido.php',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    produtos: carrinho,
+                    total: total
+                })
+            }
+        );
 
-    const numero = '5511999999999'; // troque pelo número da revendedora (DDI + DDD + número)
-    window.open(`https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`, '_blank');
+        const dados = await resposta.json();
+
+        if (!resposta.ok || !dados.link) {
+            throw new Error(dados.erro || 'Erro ao finalizar pedido.');
+        }
+
+        window.location.href = dados.link;
+
+    } catch (erro) {
+        console.error('Erro ao finalizar compra:', erro);
+        alert('Não foi possível finalizar o pedido. Tente novamente.');
+    }
 }
 
 render();
