@@ -1,4 +1,3 @@
-
 let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
 
 const lista = document.getElementById('lista-carrinho');
@@ -7,10 +6,7 @@ const spanQuantidade = document.getElementById('quantidade');
 const spanTotal = document.getElementById('total');
 
 function formatar(valor) {
-    return valor.toLocaleString('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    });
+    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
 function salvar() {
@@ -39,21 +35,16 @@ function render() {
         lista.innerHTML += `
             <div class="item-carrinho">
                 <img src="${item.img}" alt="${item.nome}" width="80">
-
                 <div class="item-info">
                     <h3>${item.nome}</h3>
                     <p>${formatar(item.preco)}</p>
                 </div>
-
                 <div class="item-qtd">
                     <button onclick="alterarQtd(${i}, -1)">−</button>
                     <span>${item.quantidade}</span>
                     <button onclick="alterarQtd(${i}, 1)">+</button>
                 </div>
-
-                <button onclick="remover(${i})" aria-label="Remover">
-                    🗑
-                </button>
+                <button onclick="remover(${i})" aria-label="Remover">🗑</button>
             </div>
         `;
     });
@@ -64,11 +55,7 @@ function render() {
 
 function alterarQtd(i, delta) {
     carrinho[i].quantidade += delta;
-
-    if (carrinho[i].quantidade <= 0) {
-        carrinho.splice(i, 1);
-    }
-
+    if (carrinho[i].quantidade <= 0) carrinho.splice(i, 1);
     salvar();
     render();
 }
@@ -91,18 +78,13 @@ function finalizarCompra() {
     carrinho.forEach(item => {
         const subtotal = item.preco * item.quantidade;
         total += subtotal;
-
         mensagem += `• ${item.quantidade}x ${item.nome} - ${formatar(subtotal)}\n`;
     });
 
     mensagem += `\nTotal: ${formatar(total)}`;
 
-    const numero = '5511949446373';
-
-    window.open(
-        `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`,
-        '_blank'
-    );
+    const numero = '5511999999999'; // troque pelo número da revendedora (DDI + DDD + número)
+    window.open(`https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`, '_blank');
 }
 
 render();
